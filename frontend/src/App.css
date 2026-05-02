@@ -1,0 +1,18 @@
+.skills_container {
+  margin: 50px;
+}
+
+.skills_cat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20%;
+  gap: 60px;
+}
+
+.skills_list {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
