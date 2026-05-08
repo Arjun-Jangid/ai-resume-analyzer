@@ -1,0 +1,23 @@
+Python
+JavaScript
+React
+Node.js
+FastAPI
+REST APIs
+PostgreSQL
+Docker
+Kubernetes
+AWS
+Azure
+TensorFlow
+PyTorch
+SQL
+MongoDB
+Git
+CI/CD
+Linux
+Data Structures
+Machine Learning
+NLP
+LangChain
+Vector Database
