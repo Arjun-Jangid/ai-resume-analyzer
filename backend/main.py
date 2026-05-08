@@ -1,6 +1,7 @@
 from turtle import mode
+import fitz
 from pydantic import BaseModel
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 # from backend import skills
 # from skills import SKILLS
@@ -14,6 +15,13 @@ rag = RAG()
 class JobRequest(BaseModel):
     resume_text: str
     job_description: str
+
+def extract_text_from_pdf(file):
+    pdf = fitz.open(stream=file.file.read(), filetype="pdf")
+    text = ""
+    for page in pdf:
+        text += page.get_text()
+    return text
 
 app = FastAPI()
 model_client = AIModelClient()
@@ -32,10 +40,13 @@ def home():
     return {"message": "Welcome to the Resume Parser API!"}
 
 @app.post("/match-job")
-def match_job(data: JobRequest):
+async def match_job(file: UploadFile = File(...), job_description: str = Form(...)):
 
-    retrived_skills = rag.retrieve_skills(query=data.job_description)
-    print("Retrieved Skills:", retrived_skills)
+    if (not file.filename or not file.filename.lower().endswith('.pdf') or file.content_type != 'application/pdf'):
+        return {"error": "Invalid file type. Please upload a PDF file."}
+
+    resume_text = extract_text_from_pdf(file)
+    retrived_skills = rag.retrieve_skills(query=job_description)
 
     result = model_client.generate(
         model="gemma:2b",
@@ -67,20 +78,28 @@ def match_job(data: JobRequest):
         - Do not use broad phrases like "cloud platforms".
 
         Resume:
-        {data.resume_text}
+        {resume_text}
 
         Job Description:
-        {data.job_description}
+        {job_description}
 
         Relevant Market Skills:
         {retrived_skills}
         """,
         stream=False)
     
-    result = result["response"]
-    result = json.loads(result)
+    if not result or not isinstance(result, dict) or "response" not in result:
+        return {"error": "AI model did not return a valid response."}
 
-    print("AI Model Job Match Result:", result)
+    response_text = result["response"]
+
+    try:
+        result = json.loads(response_text)
+    except json.JSONDecodeError:
+        return {"error": "AI model returned invalid JSON."}
+
+    print("AI Model Response:", response_text)
+    print("AI Model Result:", result)
 
     return {
         "resume_result": result,

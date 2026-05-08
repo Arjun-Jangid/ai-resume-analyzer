@@ -11,28 +11,32 @@ type SkillsData = {
 };
 
 function App() {
-  const [resumeText, setResumeText] = useState<any>("");
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  // const [resumeText, setResumeText] = useState<any>("");
   const [jobDescription, setJobDescription] = useState<any>("");
   const [loading, setLoading] = useState(false);
   const [skills, setSkills] = useState<SkillsData | null>(null);
 
   const resumeAnalyzer = async () => {
-    if (!resumeText || !jobDescription) {
-      alert("Please fill in all fields!");
+    // if (!resumeText || !jobDescription) {
+    //   alert("Please fill in all fields!");
+    //   return;
+    // }
+
+    if (!resumeFile || !jobDescription) {
+      alert("Please upload your resume file and enter the job description!");
       return;
     }
 
     try {
       setLoading(true);
+      const formData = new FormData();
+      formData.append("file", resumeFile);
+      formData.append("job_description", jobDescription);
+
       const response = await fetch(API_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          resume_text: resumeText,
-          job_description: jobDescription,
-        }),
+        body: formData,
       });
 
       const data = await response.json();
@@ -43,37 +47,47 @@ function App() {
       alert("An error occurred while submitting the application.");
     } finally {
       setLoading(false);
-      setResumeText("");
+      // setResumeText("");
       setJobDescription("");
     }
   };
-
-  console.log("Skills in frontend:", skills);
 
   return (
     <>
       <div>
         <h1>AI Resume Analyzer</h1>
         <div className="input_container">
-          <textarea
+          {/* <textarea
             value={resumeText}
             placeholder="Enter your resume in text"
             required
             onChange={(e) => setResumeText(e.target.value || null)}
-          />
+          /> */}
+
           <textarea
             value={jobDescription}
             placeholder="Enter your job description"
             required
             onChange={(e) => setJobDescription(e.target.value || null)}
           />
-          <button
-            className={`analyze_button ${loading ? "loading" : ""}`}
-            disabled={!resumeText || !jobDescription || loading}
-            onClick={resumeAnalyzer}
-          >
-            {loading ? "Analyzing..." : "Analyze"}
-          </button>
+          <div className="form_bottom">
+            <input
+              type="file"
+              className="file_input"
+              required
+              accept=".pdf"
+              onChange={(e) =>
+                setResumeFile(e.target.files ? e.target.files[0] : null)
+              }
+            />
+            <button
+              className={`analyze_button ${loading ? "loading" : ""}`}
+              disabled={!resumeFile || !jobDescription || loading}
+              onClick={resumeAnalyzer}
+            >
+              {loading ? "Analyzing..." : "Analyze"}
+            </button>
+          </div>
         </div>
 
         <div className="skills_container">
@@ -93,11 +107,13 @@ function App() {
                         <th>Matched Skills</th>
                         <td>
                           <ul>
-                            {skills.matched_skills.map(
-                              (skill: string, index: number) => (
-                                <li key={index}>{skill}</li>
-                              ),
-                            )}
+                            {skills.matched_skills
+                              ? skills.matched_skills.map(
+                                  (skill: string, index: number) => (
+                                    <li key={index}>{skill}</li>
+                                  ),
+                                )
+                              : "-"}
                           </ul>
                         </td>
                       </tr>
@@ -108,11 +124,13 @@ function App() {
                         <th>Missing Skills</th>
                         <td>
                           <ul>
-                            {skills.missing_skills.map(
-                              (skill: string, index: number) => (
-                                <li key={index}>{skill}</li>
-                              ),
-                            )}
+                            {skills.missing_skills
+                              ? skills.missing_skills.map(
+                                  (skill: string, index: number) => (
+                                    <li key={index}>{skill}</li>
+                                  ),
+                                )
+                              : "-"}
                           </ul>
                         </td>
                       </tr>
@@ -123,11 +141,13 @@ function App() {
                         <th>Suggestions</th>
                         <td>
                           <ul>
-                            {skills.suggestions.map(
-                              (suggestion: string, index: number) => (
-                                <li key={index}>{suggestion}</li>
-                              ),
-                            )}
+                            {skills.suggestions
+                              ? skills.suggestions.map(
+                                  (suggestion: string, index: number) => (
+                                    <li key={index}>{suggestion}</li>
+                                  ),
+                                )
+                              : "-"}
                           </ul>
                         </td>
                       </tr>

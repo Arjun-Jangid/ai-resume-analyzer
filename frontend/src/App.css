@@ -11,6 +11,23 @@
   margin-top: clamp(16px, 5vw, 10%);
 }
 
+.file_input {
+  width: clamp(150px, 30vw, 220px);
+  padding: 12px;
+  font-size: 16px;
+  background-color: rgba(220, 220, 220, 0.023);
+  border: 1px solid rgba(128, 128, 128, 0.468);
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.form_bottom {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 20px;
+}
+
 .input_container textarea {
   max-width: 100%;
   min-width: 100%;
@@ -33,7 +50,7 @@
   background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 30px;
+  border-radius: 14px;
   cursor: pointer;
 }
 
@@ -43,7 +60,7 @@
 }
 
 .loading {
-  background-color: #007bff !important;
+  background-color: #0056b3 !important;
   color: white !important;
 }
 
