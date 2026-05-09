@@ -1,11 +1,7 @@
-from turtle import mode
 import fitz
 from pydantic import BaseModel
 from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-# from backend import skills
-# from skills import SKILLS
-import re
 import json
 from model import AIModelClient
 from rag import RAG
@@ -16,6 +12,9 @@ class JobRequest(BaseModel):
     resume_text: str
     job_description: str
 
+class ChatResponse(BaseModel):
+    query: str
+
 def extract_text_from_pdf(file):
     pdf = fitz.open(stream=file.file.read(), filetype="pdf")
     text = ""
@@ -25,6 +24,8 @@ def extract_text_from_pdf(file):
 
 app = FastAPI()
 model_client = AIModelClient()
+
+resume_memory = ""
 
 app.add_middleware(
     CORSMiddleware,
@@ -47,6 +48,9 @@ async def match_job(file: UploadFile = File(...), job_description: str = Form(..
 
     resume_text = extract_text_from_pdf(file)
     retrived_skills = rag.retrieve_skills(query=job_description)
+
+    global resume_memory
+    resume_memory = resume_text
 
     result = model_client.generate(
         model="gemma:2b",
@@ -98,38 +102,36 @@ async def match_job(file: UploadFile = File(...), job_description: str = Form(..
     except json.JSONDecodeError:
         return {"error": "AI model returned invalid JSON."}
 
-    print("AI Model Response:", response_text)
-    print("AI Model Result:", result)
-
     return {
         "resume_result": result,
         "message": "Job matched successfully!"
     }
 
 
-# @app.post("/submit-application")
-# async def submit_application(file: UploadFile = File(...)):
-#     content = await file.read()
-#     content_str = content.decode('utf-8', errors='ignore')
-#     content_str = content_str + "\n\nExtract the relevant skills from the above resume and categorize them into frontend, backend, ui_designer, ai_ml_engineer, devops, and data_analyst. Return the results in a JSON format with categories as keys and lists of skills as values."
+@app.post("/chat")
+def chat(query: str = Form(...)):
 
-#     result = model_client.generate(model="gemma:2b", prompt=content_str, stream=False)
-#     answer = result["response"]
+    prompt = f"""
+    You are an AI career assistant.
 
-#     # results = {}
+    Analyze the user's resume carefully.
 
-#     # for category, skills in SKILLS.items():
-#     #     matched = [skill for skill in skills if skill.lower() in content_str.lower()]
-#     #     if matched:
-#     #         results[category] = 
-    
-#     print("AI Model Response:", answer)
-#     print("AI Model Response Type:", type(answer))
-#     skills = json.loads(answer)
+    Resume:
+    {resume_memory}
 
+    Question:
+    {query}
+    """
 
-#     return {
-#         "filename": file.filename,
-#         "skills": skills,
-#         "message": f"Application submitted successfully!"
-#     }
+    result = model_client.generate(
+        model="gemma:2b",
+        prompt=prompt,
+        stream=False
+    ),
+
+    response = result[0]["response"]
+
+    return {
+        "answer": response,
+        "status": "chat return successfully"
+    }
