@@ -1,9 +1,9 @@
 import json
 from fastapi import APIRouter, File, Form, UploadFile
-from model import AIModelClient
-from pdf_parser import extract_text_from_pdf
-from prompts import build_chat_prompt, build_match_job_prompt
-from rag import rag
+from backend.model import AIModelClient
+from backend.pdf_parser import extract_text_from_pdf
+from backend.prompts import build_chat_prompt, build_match_job_prompt
+from backend.rag import rag
 
 router = APIRouter()
 model_client = AIModelClient()
