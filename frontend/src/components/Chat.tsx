@@ -1,14 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import "./Chat.css";
 import ReactMarkdown from "react-markdown";
-import sendImg from "./assets/send.png";
-
-const API_URL = "http://127.0.0.1:8000/chat";
+import sendImg from "../assets/send.png";
+import { CHAT_URL } from "../utils/constants";
 
 function Chat() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  const [chat, setChat] = useState("");
   const [history, setHistory] = useState<
     { type: "user" | "bot"; text: string }[]
   >([]);
@@ -30,13 +28,12 @@ function Chat() {
 
     try {
       setLoading(true);
-      const response = await fetch(API_URL, {
+      const response = await fetch(CHAT_URL, {
         method: "POST",
         body: formData,
       });
 
       const data = await response.json();
-      setChat(data.answer);
       setHistory((prev) => [...prev, { type: "bot", text: data.answer }]);
     } catch (error) {
       console.error("Error", error);

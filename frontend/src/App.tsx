@@ -1,20 +1,14 @@
 import { useState } from "react";
 import "./App.css";
-import Chat from "./Chat";
+import Chat from "./components/Chat";
+import { SkillsResults } from "./components/SkillsResults";
 import uploadImg from "./assets/upload.png";
-
-const API_URL = "http://127.0.0.1:8000/match-job";
-
-type SkillsData = {
-  match_score: string;
-  matched_skills?: string[];
-  missing_skills?: string[];
-  suggestions?: string[];
-};
+import type { SkillsData } from "./types/skills";
+import { MATCH_JOB_URL } from "./utils/constants";
 
 function App() {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [jobDescription, setJobDescription] = useState<any>("");
+  const [jobDescription, setJobDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [skills, setSkills] = useState<SkillsData | null>(null);
 
@@ -30,7 +24,7 @@ function App() {
       formData.append("file", resumeFile);
       formData.append("job_description", jobDescription);
 
-      const response = await fetch(API_URL, {
+      const response = await fetch(MATCH_JOB_URL, {
         method: "POST",
         body: formData,
       });
@@ -74,7 +68,9 @@ function App() {
             <input
               type="file"
               hidden
-              onChange={(e) => setResumeFile(e.target.files?.[0])}
+              onChange={(e) =>
+                setResumeFile(e.target.files?.[0] ?? null)
+              }
             />
 
             <div className="upload_content">
@@ -99,74 +95,7 @@ function App() {
         </div>
       </div>
 
-      <div className="skills_container">
-        {skills && (
-          <div>
-            <h2 className="subheading">Extracted Skills</h2>
-            <div className="table_wrapper">
-              <table className="skills_table">
-                <tbody>
-                  <tr>
-                    <th>Match Score</th>
-                    <td>{skills.match_score}</td>
-                  </tr>
-
-                  {skills.matched_skills && (
-                    <tr>
-                      <th>Matched Skills</th>
-                      <td>
-                        <ul>
-                          {skills.matched_skills.length > 0
-                            ? skills.matched_skills.map(
-                                (skill: string, index: number) => (
-                                  <li key={index}>{skill}</li>
-                                ),
-                              )
-                            : "No skills found"}
-                        </ul>
-                      </td>
-                    </tr>
-                  )}
-
-                  {skills.missing_skills && (
-                    <tr>
-                      <th>Missing Skills</th>
-                      <td>
-                        <ul>
-                          {skills.missing_skills.length > 0
-                            ? skills.missing_skills.map(
-                                (skill: string, index: number) => (
-                                  <li key={index}>{skill}</li>
-                                ),
-                              )
-                            : "No skills found"}
-                        </ul>
-                      </td>
-                    </tr>
-                  )}
-
-                  {skills.suggestions && (
-                    <tr>
-                      <th>Suggestions</th>
-                      <td>
-                        <ul>
-                          {skills.suggestions.length > 0
-                            ? skills.suggestions.map(
-                                (suggestion: string, index: number) => (
-                                  <li key={index}>{suggestion}</li>
-                                ),
-                              )
-                            : "No suggestion found"}
-                        </ul>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-      </div>
+      {skills && <SkillsResults skills={skills} />}
       {skills && <Chat />}
     </>
   );

@@ -1,15 +1,18 @@
-from sentence_transformers import SentenceTransformer
+from pathlib import Path
 import faiss
 import numpy as np
+from sentence_transformers import SentenceTransformer
+
+_SKILLS_FILE = Path(__file__).resolve().parent / "skills_data.txt"
 
 
 class RAG:
     def __init__(self):
         # Load embedding model
-        self.model = SentenceTransformer('all-MiniLM-L6-v2')
+        self.model = SentenceTransformer("all-MiniLM-L6-v2")
 
-        # Read skills data
-        with open('skills_data.txt', 'r') as f:
+        # Read skills data (path works no matter which folder you run uvicorn from)
+        with open(_SKILLS_FILE, "r", encoding="utf-8") as f:
             self.skills = f.readlines()
 
         self.skills = [skill.strip() for skill in self.skills]
@@ -30,8 +33,12 @@ class RAG:
         # Search top k similar skills
         D, I = self.index.search(
             np.array(query_embedding, dtype=np.float32),
-            k=top_k
+            k=top_k,
         )
 
         retrived_skills = [self.skills[i] for i in I[0]]
         return retrived_skills
+
+
+# One shared instance for the API (same idea as before)
+rag = RAG()
