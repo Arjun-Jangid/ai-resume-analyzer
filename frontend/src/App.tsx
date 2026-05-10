@@ -40,8 +40,6 @@ function App() {
     }
   };
 
-  console.log("Skills in response: ", skills);
-
   return (
     <>
       <h1 className="title">AI Career Assistant</h1>
@@ -68,9 +66,7 @@ function App() {
             <input
               type="file"
               hidden
-              onChange={(e) =>
-                setResumeFile(e.target.files?.[0] ?? null)
-              }
+              onChange={(e) => setResumeFile(e.target.files?.[0] ?? null)}
             />
 
             <div className="upload_content">
