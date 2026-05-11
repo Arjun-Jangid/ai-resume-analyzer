@@ -1,19 +1,38 @@
-import requests
+import json
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
+from groq import Groq
+
+load_dotenv()
 
 class AIModelClient:
     def __init__(self):
-        self.api_url = "http://localhost:11434/api/generate"
+        self.client = Groq(
+            api_key=os.getenv("GROQ_API_KEY"),
+        )
 
-    def generate(self, model: str, prompt: str, stream: bool = False):
-        payload = {
-            "model": model,
-            "prompt": prompt,
-            "stream": stream
-        }
+    def generate(self, prompt: str, expect_json: bool = False):
         try:
-            response = requests.post(self.api_url, json=payload)
-            response.raise_for_status()
-            return response.json()
-        except requests.RequestException as e:
-            print("Error calling AI model API:", e)
+            response = self.client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                temperature=0.7,
+                max_tokens=1000,
+            )
+
+            content = response.choices[0].message.content
+
+            if expect_json:
+                return json.loads(content)
+            
+            return content
+
+        except Exception as e:
+            print("Error calling Groq API:", e)
             return None

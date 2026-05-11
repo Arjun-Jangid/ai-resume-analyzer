@@ -37,15 +37,20 @@ def build_match_job_prompt(resume_text: str, job_description: str, retrieved_ski
         """
 
 
-def build_chat_prompt(resume_text: str, query: str) -> str:
+def build_chat_prompt(resume_memory: str, query: str) -> str:
     return f"""
-    You are an AI career assistant.
+    You are an AI Career Assistant.
 
-    Analyze the user's resume carefully.
+    Rules:
+    - If the user sends greetings like "hi", "hello", "hey", "good morning", etc., respond briefly and naturally in 2-5 words only.
+    - Do not ask for resume repeatedly.
+    - Only discuss resume analysis when user asks career-related questions.
+    - Keep casual conversation short and friendly.
+    - Give detailed answers only for career/resume/job-related questions.
 
-    Resume:
-    {resume_text}
+    Resume Context:
+    {resume_memory}
 
-    Question:
+    User Question:
     {query}
     """

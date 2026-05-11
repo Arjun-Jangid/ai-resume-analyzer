@@ -34,23 +34,22 @@ async def match_job(file: UploadFile = File(...), job_description: str = Form(..
     prompt = build_match_job_prompt(resume_text, job_description, retrieved_skills)
 
     result = model_client.generate(
-        model="gemma:2b",
         prompt=prompt,
-        stream=False,
+        expect_json=True
     )
 
-    if not result or not isinstance(result, dict) or "response" not in result:
+    if not result or not isinstance(result, dict):
         return {"error": "AI model did not return a valid response."}
 
-    response_text = result["response"]
+    # response_text = result
 
-    try:
-        parsed = json.loads(response_text)
-    except json.JSONDecodeError:
-        return {"error": "AI model returned invalid JSON."}
+    # try:
+    #     parsed = json.loads(response_text)
+    # except json.JSONDecodeError:
+    #     return {"error": "AI model returned invalid JSON."}
 
     return {
-        "resume_result": parsed,
+        "resume_result": result,
         "message": "Job matched successfully!",
     }
 
@@ -60,17 +59,15 @@ def chat(query: str = Form(...)):
     prompt = build_chat_prompt(resume_memory, query)
 
     result = model_client.generate(
-        model="gemma:2b",
-        prompt=prompt,
-        stream=False,
+        prompt=prompt
     )
 
-    if not result or not isinstance(result, dict) or "response" not in result:
+    if not result:
         return {"answer": "", "status": "AI model did not return a valid response."}
 
-    response = result["response"]
+    # response = result["response"]
 
     return {
-        "answer": response,
+        "answer": result,
         "status": "chat return successfully",
     }
