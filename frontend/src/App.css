@@ -218,3 +218,26 @@
     font-size: 12px;
   }
 }
+@media screen and (max-width: 400px) {
+  .form_container {
+    gap: 16px;
+  }
+  .right_container {
+    gap: 16px;
+  }
+  .upload_content p {
+    font-size: 12px;
+    padding: 0 10px;
+  }
+  .upload_box span {
+    font-size: 12px;
+  }
+
+  .upload_icon {
+    width: 18px;
+  }
+
+  .analyze_button {
+    font-size: 15px;
+  }
+}
